@@ -839,82 +839,59 @@ restamp:
 		/* check the data */
 		cp = ((unsigned char *)ptr) + sizeof(struct timeval); // modified
 		long *ptr = (long *)cp;
-        static long user, nice, system, idle, iowait, irq, softirq, steal, guest, guest_nice;
-        static long prev_user, prev_nice, prev_system, prev_idle, prev_iowait, prev_irq, prev_softirq, prev_steal, prev_guest, prev_guest_nice;
+
+        enum stat_id {
+            USER,
+            NICE,
+            SYSTEM,
+            IDLE,
+            IOWAIT,
+            IRQ,
+            SOFTIRQ,
+            STEAL,
+            GUEST,
+            GUEST_NICE,
+            NSTATS,
+        };
+
+        static long metrics[NSTATS];
+        static long prev_metrics[NSTATS];
         static int initial = 0;
         if (initial == 0) {
             initial = 1;
-            prev_user = *ptr; ptr++;
-            prev_nice = *ptr; ptr++;
-            prev_system = *ptr; ptr++;
-            prev_idle = *ptr; ptr++;
-            prev_iowait = *ptr; ptr++;
-            prev_irq = *ptr; ptr++;
-            prev_softirq = *ptr; ptr++;
-            prev_steal = *ptr; ptr++;
-            prev_guest = *ptr; ptr++;
-            prev_guest_nice = *ptr; ptr++;
-
+            for (int i = USER; i < NSTATS; i++) {
+                prev_metrics[i] = *ptr;
+                ptr++;
+            }
+            
             return 0;
         }
-        user = *ptr; ptr++;
-        nice = *ptr; ptr++;
-        system = *ptr; ptr++;
-        idle = *ptr; ptr++;
-        iowait = *ptr; ptr++;
-        irq = *ptr; ptr++;
-        softirq = *ptr; ptr++;
-        steal = *ptr; ptr++;
-        guest = *ptr; ptr++;
-        guest_nice = *ptr; ptr++;
 
-		puts("\nCPU metrics");
-		printf("user: %ld, ", user);
-		printf("nice: %ld, ", nice);
-		printf("system: %ld, ", system);
-		printf("idle: %ld, ", idle); 
-		printf("iowait: %ld, ", iowait);
-		printf("irq: %ld, ", irq); 
-		printf("softirq: %ld, ", softirq); 
-		printf("steal: %ld, ", steal); 
-		printf("guest: %ld, ", guest);
-		printf("guest_nice: %ld\n ", guest_nice); 
-        
-        fprintf(fp, "%ld, ", user - prev_user);
-        fprintf(fp, "%ld, ", nice - prev_nice);
-        fprintf(fp, "%ld, ", system - prev_system);
-        fprintf(fp, "%ld, ", idle - prev_idle);
-        fprintf(fp, "%ld, ", iowait - prev_iowait);
-        fprintf(fp, "%ld, ", irq - prev_irq);
-        fprintf(fp, "%ld, ", softirq - prev_softirq);
-        fprintf(fp, "%ld, ", steal - prev_steal);
-        fprintf(fp, "%ld, ", guest - prev_guest);
-        fprintf(fp, "%ld\n", guest_nice - prev_guest_nice);
+        for (int i = USER; i < NSTATS; i++) {
+            metrics[i] = *ptr;
+            ptr++;
+        }
 
-        prev_user = user;
-        prev_nice = nice;
-        prev_system = system;
-        prev_idle = idle;
-        prev_iowait = iowait;
-        prev_irq = irq;
-        prev_softirq = softirq;
-        prev_steal = steal;
-        prev_guest = guest;
-        prev_guest_nice = guest_nice;
+		/* puts("\nCPU metrics"); */
+		/* printf("user: %ld, ", user); */
+		/* printf("nice: %ld, ", nice); */
+		/* printf("system: %ld, ", system); */
+		/* printf("idle: %ld, ", idle); */ 
+		/* printf("iowait: %ld, ", iowait); */
+		/* printf("irq: %ld, ", irq); */ 
+		/* printf("softirq: %ld, ", softirq); */ 
+		/* printf("steal: %ld, ", steal); */ 
+		/* printf("guest: %ld, ", guest); */
+		/* printf("guest_nice: %ld\n ", guest_nice); */ 
         
-		// for (i = sizeof(struct timeval); i < rts->datalen; ++i, ++cp, ++dp) {
-		// 	if (*cp != *dp) {
-		// 		printf(_("\nwrong data byte #%zu should be 0x%x but was 0x%x"),
-		// 		       i, *dp, *cp);
-		// 		cp = (unsigned char *)ptr + sizeof(struct timeval);
-		// 		for (i = sizeof(struct timeval); i < rts->datalen; ++i, ++cp) {
-		// 			if ((i % 32) == sizeof(struct timeval))
-		// 				printf("\n#%zu\t", i);
-		// 			printf("%x ", *cp);
-		// 		}
-		// 		break;
-		// 	}
-		// }
+
+        for (int i = USER; i < NSTATS; i++) {
+            fprintf(fp, "%ld, ", metrics[i] - prev_metrics[i]);
+        }
+        fprintf(fp, "\n");
+
+        memcpy(prev_metrics, metrics, sizeof(long) * NSTATS);
+        
 	}
 	return 0;
 }
