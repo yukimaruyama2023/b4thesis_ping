@@ -35,6 +35,7 @@
 #include "iputils_common.h"
 #include "ping.h"
 
+
 #ifndef HZ
 #define HZ sysconf(_SC_CLK_TCK)
 #endif
@@ -885,10 +886,11 @@ restamp:
 		/* printf("guest_nice: %ld\n ", guest_nice); */ 
         
 
-        for (int i = USER; i < NSTATS; i++) {
+        fprintf(fp, "%ld ,", elapsed_time_microsec);
+        for (int i = USER; i < NSTATS - 1; i++) {
             fprintf(fp, "%ld, ", metrics[i] - prev_metrics[i]);
         }
-        fprintf(fp, "\n");
+        fprintf(fp, "%ld\n", metrics[GUEST_NICE] - prev_metrics[GUEST_NICE]);
 
         memcpy(prev_metrics, metrics, sizeof(long) * NSTATS);
         

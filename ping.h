@@ -33,6 +33,8 @@
 #include <linux/filter.h>
 #include <resolv.h>
 
+extern long elapsed_time_microsec;
+
 #ifdef HAVE_LIBCAP
 # include <sys/prctl.h>
 # include <sys/capability.h>

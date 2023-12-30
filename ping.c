@@ -60,6 +60,9 @@
 #include <math.h>
 #include <locale.h>
 
+struct timespec send_time, recv_time; // modified
+long elapsed_time_microsec;
+
 /* FIXME: global_rts will be removed in future */
 struct ping_rts *global_rts;
 
@@ -1573,7 +1576,11 @@ int ping4_send_probe(struct ping_rts *rts, socket_st *sock, void *packet,
 		icp->checksum = in_cksum((unsigned short *)&tmp_tv, sizeof(tmp_tv), ~icp->checksum);
 	}
 
+    timespec_get(&send_time, TIME_UTC); // modified
 	i = sendto(sock->fd, icp, cc, 0, (struct sockaddr *)&rts->whereto, sizeof(rts->whereto));
+    timespec_get(&recv_time, TIME_UTC);
+
+    elapsed_time_microsec = (recv_time.tv_sec - send_time.tv_sec) *  1000000L + (recv_time.tv_nsec - send_time.tv_nsec) / 1000L;
 
 	return (cc == i ? 0 : i);
 }
