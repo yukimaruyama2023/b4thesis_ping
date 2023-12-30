@@ -1577,6 +1577,10 @@ int ping4_send_probe(struct ping_rts *rts, socket_st *sock, void *packet,
 	}
 
     timespec_get(&send_time, TIME_UTC); // modified
+    
+    static int count = 0;
+    if (count == 12000) exit(0);
+    count++;
 	i = sendto(sock->fd, icp, cc, 0, (struct sockaddr *)&rts->whereto, sizeof(rts->whereto));
     timespec_get(&recv_time, TIME_UTC);
 

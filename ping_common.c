@@ -44,6 +44,8 @@
 static uid_t euid;
 #endif
 
+extern struct timespec send_time, recv_time; // modified
+extern long elapsed_time_microsec;
 FILE *fp; // modified
 
 void usage(void)
@@ -587,7 +589,7 @@ int main_loop(struct ping_rts *rts, ping_func_set_st *fset, socket_st *sock,
 	iov.iov_base = (char *)packet;
 
     fp = fopen("result.csv", "w");
-	for (int i = 0; i < 30; i++) { // modified
+	for (;;) { // modified
 		/* Check exit conditions. */
 		if (rts->exiting)
 			break;
@@ -885,7 +887,10 @@ restamp:
 		/* printf("guest: %ld, ", guest); */
 		/* printf("guest_nice: %ld\n ", guest_nice); */ 
         
-
+        struct tm *time;
+        time = localtime(&recv_time.tv_sec);
+        fprintf(fp, "%d/%02d/%02d-%02d:%02d:%02d.%ld,", time->tm_year + 1900, time->tm_mon + 1, time->tm_mday, time->tm_hour, time->tm_min, time->tm_sec, recv_time.tv_nsec / 1000);
+        fprintf(fp, "%ld.%09ld, ", send_time.tv_sec, send_time.tv_nsec);
         fprintf(fp, "%ld ,", elapsed_time_microsec);
         for (int i = USER; i < NSTATS - 1; i++) {
             fprintf(fp, "%ld, ", metrics[i] - prev_metrics[i]);
